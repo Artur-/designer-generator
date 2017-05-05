@@ -17,11 +17,14 @@ import org.jsoup.select.Selector;
 
 import com.vaadin.shared.util.SharedUtil;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 public class GenerateJava {
     public static void main(String[] args) throws IOException {
         String htmlFile = args[0];
-        boolean generateGetters = true;
-        String forceSuperClass = "com.vaadin.ui.Composite";
+        boolean generateGetters = false;
+        String forceSuperClass = null;
 
         // TODO out package and class from HTML location
         String outPackage = "org.vaadin.artur.generated";
@@ -31,8 +34,23 @@ public class GenerateJava {
 
         Document design = Jsoup.parse(new File(htmlFile), "UTF-8");
         Map<String, String> packageMapping = getPackageMapping(design);
-        Elements idElements = Selector.select("[_id]", design.body());
+
+        // <meta name="design-properties"
+        // content="{&quot;RULERS_VISIBLE&quot;:true,&quot;GUIDELINES_VISIBLE&quot;:false,&quot;SNAP_TO_OBJECTS&quot;:true,&quot;SNAP_TO_GRID&quot;:true,&quot;SNAPPING_DISTANCE&quot;:10,&quot;JAVA_SOURCES_ROOT&quot;:&quot;src/main/java&quot;,&quot;THEME&quot;:&quot;orderstheme&quot;}">
+
         String superClass;
+        Elements properties = Selector.select("[name=design-properties]",
+                design.head());
+        if (properties.size() != 0) {
+            String designProperties = properties.get(0).attr("content");
+            JsonObject jsonObject = Json.parse(designProperties);
+            if (jsonObject.hasKey("GENERATE_GETTERS")) {
+                generateGetters = jsonObject.getBoolean("GENERATE_GETTERS");
+            }
+            if (jsonObject.hasKey("SUPERCLASS")) {
+                forceSuperClass = jsonObject.getString("SUPERCLASS");
+            }
+        }
         if (forceSuperClass != null) {
             superClass = forceSuperClass;
         } else {
@@ -40,6 +58,7 @@ public class GenerateJava {
                     packageMapping);
         }
 
+        Elements idElements = Selector.select("[_id]", design.body());
         final JavaClassSource javaClass = Roaster.create(JavaClassSource.class);
         javaClass.setPackage(outPackage).setName(outClass);
         javaClass.setSuperType(superClass);
