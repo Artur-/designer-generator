@@ -20,6 +20,7 @@ import com.vaadin.shared.util.SharedUtil;
 public class GenerateJava {
     public static void main(String[] args) throws IOException {
         String htmlFile = args[0];
+        boolean generateGetters = true;
 
         // TODO out package and class from HTML location
         String outPackage = "org.vaadin.artur.generated";
@@ -48,10 +49,17 @@ public class GenerateJava {
             String type = tagToClass(tag, packageMapping);
             String propertyId = idElement.attr("data-property-id");
             FieldSource<JavaClassSource> field = javaClass.addField();
-            field.setName(idElement.attr("_id")).setType(type).setProtected();
+            String fieldName = idElement.attr("_id");
+            field.setName(fieldName).setType(type).setProtected();
             if (propertyId != null && !propertyId.isEmpty()) {
                 field.addAnnotation("com.vaadin.annotations.PropertyId")
                         .setStringValue(propertyId);
+            }
+
+            if (generateGetters) {
+                javaClass.addMethod()
+                        .setName("get" + SharedUtil.capitalize(fieldName))
+                        .setBody("return " + fieldName + ";").setPublic();
             }
 
         }
