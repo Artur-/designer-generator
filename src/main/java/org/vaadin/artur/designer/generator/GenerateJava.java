@@ -21,6 +21,7 @@ public class GenerateJava {
     public static void main(String[] args) throws IOException {
         String htmlFile = args[0];
         boolean generateGetters = true;
+        String forceSuperClass = "com.vaadin.ui.Composite";
 
         // TODO out package and class from HTML location
         String outPackage = "org.vaadin.artur.generated";
@@ -31,8 +32,13 @@ public class GenerateJava {
         Document design = Jsoup.parse(new File(htmlFile), "UTF-8");
         Map<String, String> packageMapping = getPackageMapping(design);
         Elements idElements = Selector.select("[_id]", design.body());
-        String superClass = tagToClass(design.body().child(0).tagName(),
-                packageMapping);
+        String superClass;
+        if (forceSuperClass != null) {
+            superClass = forceSuperClass;
+        } else {
+            superClass = tagToClass(design.body().child(0).tagName(),
+                    packageMapping);
+        }
 
         final JavaClassSource javaClass = Roaster.create(JavaClassSource.class);
         javaClass.setPackage(outPackage).setName(outClass);
