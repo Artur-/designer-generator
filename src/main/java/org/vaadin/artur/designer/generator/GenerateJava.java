@@ -84,7 +84,8 @@ public class GenerateJava {
             if (generateGetters) {
                 javaClass.addMethod()
                         .setName("get" + SharedUtil.capitalize(fieldName))
-                        .setBody("return " + fieldName + ";").setPublic();
+                        .setBody("return " + fieldName + ";").setPublic()
+                        .setReturnType(type);
             }
 
         }
