@@ -109,8 +109,8 @@ public abstract class DesignFileGenerator {
         return pkgName + "." + className;
     }
 
-    protected void writeFile(File folder, JavaClassSource javaClass)
-            throws IOException {
+    protected void writeFile(File folder, JavaClassSource javaClass,
+            boolean overwrite) throws IOException {
         String pkgName = javaClass.getPackage();
         String className = javaClass.getName();
         String outFile = pkgName.replace(".", File.separator);
@@ -119,6 +119,9 @@ public abstract class DesignFileGenerator {
         outFile += ".java";
 
         File outputFile = new File(folder, outFile);
+        if (!overwrite && outputFile.exists()) {
+            return;
+        }
         File parent = outputFile.getParentFile();
         if (!parent.exists()) {
             parent.mkdirs();

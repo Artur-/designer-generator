@@ -104,8 +104,11 @@ public class GenerateDesignerMojo extends AbstractMojo {
                             ".");
                     String javaClass = designRelativeToRoot.getFileName()
                             .toString().replace(".html", "");
-                    new CompanionFileGenerator(designFile.getValue())
-                            .generate(javaPackage, javaClass, designJavaFolder);
+                    boolean generateImplementationJava = javaClass
+                            .endsWith("Design");
+                    new CompanionFileGenerator(designFile.getValue()).generate(
+                            javaPackage, javaClass, generateImplementationJava,
+                            designJavaFolder);
                     new ElementFileGenerator(designFile.getValue()).generate(
                             javaPackage, javaClass, designJavaElementsFolder);
                 } catch (IOException e) {

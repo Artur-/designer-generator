@@ -19,7 +19,9 @@ public class CompanionFileGenerator extends DesignFileGenerator {
     }
 
     public void generate(String outputJavaPkg, String outputJavaClass,
-            File outputJavaFileBaseFolder) throws IOException {
+            boolean generateImplementationJava, File outputJavaFileBaseFolder)
+            throws IOException {
+
         Boolean generateGetters = false;
         String forceSuperClass = null;
 
@@ -77,7 +79,19 @@ public class CompanionFileGenerator extends DesignFileGenerator {
                 .setBody("Design.read(this);");
         javaClass.addImport("com.vaadin.ui.declarative.Design");
 
-        writeFile(outputJavaFileBaseFolder, javaClass);
+        writeFile(outputJavaFileBaseFolder, javaClass, true);
+        // Generate implementation file if requested and not present
+        if (generateImplementationJava) {
+            String implementationJavaClass = outputJavaClass
+                    .replaceFirst("Design$", "");
+            final JavaClassSource implJavaClass = Roaster
+                    .create(JavaClassSource.class);
+            implJavaClass.setPackage(javaClass.getPackage())
+                    .setName(implementationJavaClass);
+            implJavaClass.setSuperType(javaClass.getCanonicalName());
+
+            writeFile(outputJavaFileBaseFolder, implJavaClass, false);
+        }
 
     }
 
