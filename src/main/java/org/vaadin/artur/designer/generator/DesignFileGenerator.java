@@ -4,11 +4,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.jboss.forge.roaster.model.source.Import;
 import org.jboss.forge.roaster.model.source.JavaClassSource;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -120,10 +124,27 @@ public abstract class DesignFileGenerator {
             parent.mkdirs();
         }
 
-        System.out.println("Writing to " + outputFile);
+        orderImports(javaClass);
         try (FileOutputStream out = new FileOutputStream(outputFile)) {
             IOUtils.write(javaClass.toString(), out, StandardCharsets.UTF_8);
         }
+    }
+
+    private void orderImports(JavaClassSource javaClass) {
+        // Implemented manually because of
+        // https://issues.jboss.org/browse/ROASTER-56
+        List<Import> imports = new ArrayList<>(javaClass.getImports());
+        for (Import imp : imports) {
+            javaClass.removeImport(imp);
+        }
+        Collections.sort(imports, (i1, i2) -> {
+            return i1.getQualifiedName().compareTo(i2.getQualifiedName());
+        });
+
+        for (Import imp : imports) {
+            javaClass.addImport(imp);
+        }
+
     }
 
     protected Element getBody() {
