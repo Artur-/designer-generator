@@ -1,4 +1,4 @@
-package com.vaadin.frontend.maven;
+package org.vaadin.artur.designer.maven;
 
 import java.io.File;
 import java.io.FileOutputStream;
